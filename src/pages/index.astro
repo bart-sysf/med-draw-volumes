@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+import ConcentrationCalculator from '../components/ConcentrationCalculator.vue';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medication Draw-Up Calculator</title>
+    <meta
+      name="description"
+      content="Clinical tool to calculate the volume to draw from a medication vial and whether a dilution step is needed. For guidance only — always verify with a pharmacist."
+    />
+    <!-- Strict CSP: no external resources, no inline scripts from external origins -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; form-action 'none';"
+    />
+  </head>
+  <body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
+
+    <!-- ─── Persistent disclaimer (always in static HTML, cannot be dismissed) ─── -->
+    <div
+      role="note"
+      aria-label="Medical disclaimer"
+      class="w-full bg-amber-50 border-b-2 border-amber-400 px-4 py-3"
+    >
+      <p class="max-w-lg mx-auto text-sm text-amber-800 text-center font-medium leading-snug">
+        ⚠ <strong>For guidance only.</strong> Always verify doses and dilution instructions with a
+        pharmacist or authoritative drug reference before administration.
+        This tool does not replace clinical judgement.
+      </p>
+    </div>
+
+    <!-- ─── Header ─── -->
+    <header class="w-full bg-white border-b border-gray-200 px-4 py-4">
+      <div class="max-w-lg mx-auto">
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">
+          Medication Draw-Up Calculator
+        </h1>
+        <p class="text-sm text-gray-500 mt-0.5">
+          Calculate draw volume &amp; dilution from a vial
+        </p>
+      </div>
+    </header>
+
+    <!-- ─── Calculator island ─── -->
+    <main class="pb-16">
+      <ConcentrationCalculator client:load />
+    </main>
+
+    <!-- ─── Footer ─── -->
+    <footer class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 px-4 py-2 text-center text-xs text-gray-400">
+      Adult patients only &middot; Standard syringes (1–50 ml) &middot; Not for paediatric/neonatal use without pharmacist review
+    </footer>
+
+  </body>
+</html>
