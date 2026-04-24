@@ -2,6 +2,7 @@
   "name": "med-draw-volumes",
   "type": "module",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.24.0",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
