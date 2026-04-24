@@ -9,15 +9,13 @@
     "astro": "astro",
     "test": "vitest run"
   },
-  "dependencies": {
+  "devDependencies": {
     "@astrojs/vue": "^6.0.1",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.9",
     "tailwindcss": "^4.2.4",
-    "vue": "^3.5.33"
-  },
-  "devDependencies": {
     "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "vue": "^3.5.33"
   }
 }
