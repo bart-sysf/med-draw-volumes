@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { calculate, type DoseUnit, type ConcUnit } from '../lib/calculator';
 
 const doseValue = ref<string>('');
@@ -9,6 +9,62 @@ const concUnit = ref<ConcUnit>('mg/ml');
 
 const DOSE_UNITS: DoseUnit[] = ['µg', 'mg', 'g'];
 const CONC_UNITS: ConcUnit[] = ['µg/ml', 'mg/ml', 'g/ml'];
+
+// ---------- Weight-based dosing ----------
+type WeightDoseUnit = 'µg/kg' | 'mg/kg' | 'g/kg';
+const WEIGHT_DOSE_UNITS: WeightDoseUnit[] = ['µg/kg', 'mg/kg', 'g/kg'];
+
+const useWeightBased = ref(false);
+const weightValue = ref<string>('');
+const dosePerKgValue = ref<string>('');
+const dosePerKgUnit = ref<WeightDoseUnit>('mg/kg');
+
+const weightDoseUnitToDoseUnit: Record<WeightDoseUnit, DoseUnit> = {
+  'µg/kg': 'µg',
+  'mg/kg': 'mg',
+  'g/kg': 'g',
+};
+
+const weightError = computed(() => {
+  if (!useWeightBased.value || weightValue.value === '') return null;
+  const n = Number(weightValue.value);
+  if (isNaN(n) || n <= 0) return 'Weight must be a positive number.';
+  return null;
+});
+
+const dosePerKgError = computed(() => {
+  if (!useWeightBased.value || dosePerKgValue.value === '') return null;
+  const n = Number(dosePerKgValue.value);
+  if (isNaN(n) || n <= 0) return 'Dose per kg must be a positive number.';
+  return null;
+});
+
+// Keep doseValue / doseUnit in sync when weight-based mode is active
+watch(
+  [useWeightBased, weightValue, dosePerKgValue, dosePerKgUnit],
+  () => {
+    if (!useWeightBased.value) return;
+    const w = Number(weightValue.value);
+    const d = Number(dosePerKgValue.value);
+    if (!isNaN(w) && w > 0 && !isNaN(d) && d > 0) {
+      doseValue.value = String(w * d);
+      doseUnit.value = weightDoseUnitToDoseUnit[dosePerKgUnit.value];
+    } else {
+      doseValue.value = '';
+    }
+  },
+);
+
+function toggleWeightBased() {
+  useWeightBased.value = !useWeightBased.value;
+  if (!useWeightBased.value) {
+    // Restore manual entry: clear the auto-populated dose so user starts fresh
+    doseValue.value = '';
+    weightValue.value = '';
+    dosePerKgValue.value = '';
+  }
+}
+// -----------------------------------------
 
 /** Validation errors */
 const doseError = computed(() => {
@@ -51,9 +107,89 @@ function fmt(n: number): string {
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-6 space-y-5">
       <h2 class="text-lg font-semibold text-gray-800 tracking-tight">Enter dose &amp; vial concentration</h2>
 
+      <!-- Weight-based toggle -->
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="useWeightBased"
+          @click="toggleWeightBased"
+          class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          :class="useWeightBased ? 'bg-blue-600' : 'bg-gray-300'"
+          aria-label="Calculate dose from weight"
+        >
+          <span
+            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200"
+            :class="useWeightBased ? 'translate-x-5' : 'translate-x-0'"
+          />
+        </button>
+        <span class="text-sm font-medium text-gray-700">Calculate dose from weight</span>
+      </div>
+
+      <!-- Weight-based fields (shown when toggle is on) -->
+      <Transition
+        enter-active-class="transition-all duration-200 ease-out"
+        enter-from-class="opacity-0 -translate-y-1"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-1"
+      >
+        <div v-if="useWeightBased" class="space-y-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-4">
+          <!-- Weight row -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Patient weight</label>
+            <div class="flex gap-2">
+              <input
+                v-model="weightValue"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                placeholder="e.g. 70"
+                class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                :class="weightError ? 'border-red-400 focus:ring-red-400' : ''"
+                aria-label="Patient weight in kg"
+              />
+              <span class="inline-flex items-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600 select-none">kg</span>
+            </div>
+            <p v-if="weightError" class="mt-1 text-xs text-red-600" role="alert">{{ weightError }}</p>
+          </div>
+
+          <!-- Dose per kg row -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Dose per kg</label>
+            <div class="flex gap-2">
+              <input
+                v-model="dosePerKgValue"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                placeholder="e.g. 0.1"
+                class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                :class="dosePerKgError ? 'border-red-400 focus:ring-red-400' : ''"
+                aria-label="Dose per kg amount"
+              />
+              <select
+                v-model="dosePerKgUnit"
+                class="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Dose per kg unit"
+              >
+                <option v-for="u in WEIGHT_DOSE_UNITS" :key="u" :value="u">{{ u }}</option>
+              </select>
+            </div>
+            <p v-if="dosePerKgError" class="mt-1 text-xs text-red-600" role="alert">{{ dosePerKgError }}</p>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Dose row -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Desired dose</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Desired dose
+          <span v-if="useWeightBased" class="ml-1 text-xs font-normal text-blue-600">(auto-calculated)</span>
+        </label>
         <div class="flex gap-2">
           <input
             v-model="doseValue"
@@ -63,12 +199,14 @@ function fmt(n: number): string {
             step="any"
             placeholder="e.g. 5"
             class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            :class="doseError ? 'border-red-400 focus:ring-red-400' : ''"
+            :class="[doseError ? 'border-red-400 focus:ring-red-400' : '', useWeightBased ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : '']"
+            :readonly="useWeightBased"
             aria-label="Dose amount"
           />
           <select
             v-model="doseUnit"
             class="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :disabled="useWeightBased"
             aria-label="Dose unit"
           >
             <option v-for="u in DOSE_UNITS" :key="u" :value="u">{{ u }}</option>
