@@ -50,7 +50,9 @@ watch(
       doseValue.value = String(w * d);
       doseUnit.value = weightDoseUnitToDoseUnit[dosePerKgUnit.value];
     } else {
+      // Clear both value and unit together to keep state consistent
       doseValue.value = '';
+      doseUnit.value = 'mg';
     }
   },
 );
@@ -58,8 +60,8 @@ watch(
 function toggleWeightBased() {
   useWeightBased.value = !useWeightBased.value;
   if (!useWeightBased.value) {
-    // Restore manual entry: clear the auto-populated dose so user starts fresh
-    doseValue.value = '';
+    // Switching back to manual: preserve the calculated dose value so the user
+    // can review it and fine-tune as needed. Just clear the weight inputs.
     weightValue.value = '';
     dosePerKgValue.value = '';
   }
