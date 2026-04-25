@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/bart-sysf/med-draw-volumes/compare/v1.0.1...v1.1.0) (2026-04-25)
+
+
+### Bug Fixes
+
+* preserve dose on weight-mode toggle-off; clear doseUnit with doseValue in watcher ([d68955a](https://github.com/bart-sysf/med-draw-volumes/commit/d68955a531cfac5a99cc9a5667d956bd6ff1eb5b))
+
+
+### Features
+
+* add weight-based dose calculation to ConcentrationCalculator ([0816417](https://github.com/bart-sysf/med-draw-volumes/commit/081641733dfa73131d541f4648036ec1fa46e277))
+
 ## [1.0.1](https://github.com/bart-sysf/med-draw-volumes/compare/v1.0.0...v1.0.1) (2026-04-24)
 
 
