@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/bart-sysf/med-draw-volumes/compare/v1.1.4...v1.1.5) (2026-07-15)
+
+
+### Bug Fixes
+
+* update workflow ([ef141db](https://github.com/bart-sysf/med-draw-volumes/commit/ef141db27fc90d3491c727918d12ad201af43b9b))
+
 ## [1.1.4](https://github.com/bart-sysf/med-draw-volumes/compare/v1.1.3...v1.1.4) (2026-07-15)
 
 
