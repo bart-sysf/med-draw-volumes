@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      pull-requests: write
       contents: write
       packages: write
       issues: write
@@ -35,7 +36,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - uses: cycjimmy/semantic-release-action@v6.0.0
+      - if: github.event_name != 'pull_request'
+        uses: cycjimmy/semantic-release-action@v8.1.4
         id: release
         with:
           extra_plugins: |
