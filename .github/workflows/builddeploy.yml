@@ -19,15 +19,15 @@ jobs:
       packages: write
       issues: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        uses: actions/setup-node@v6.5.0
         with:
           node-version: 24
           package-manager-cache: false
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+      - uses: pnpm/action-setup@v6.1.1
         with:
           run_install: true
           cache: false
@@ -35,7 +35,7 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+      - uses: cycjimmy/semantic-release-action@v6.0.0
         id: release
         with:
           extra_plugins: |
@@ -43,17 +43,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+      - uses: docker/setup-buildx-action@v4.4.1
         if: steps.release.outputs.new_release_published == 'true'
 
-      - uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+      - uses: docker/login-action@v4.8.0
         if: steps.release.outputs.new_release_published == 'true'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+      - uses: docker/build-push-action@v7.4.0
         if: steps.release.outputs.new_release_published == 'true'
         with:
           context: .
@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Trivy scan
         id: trivy
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        uses: aquasecurity/trivy-action@v0.36.0
         if: steps.release.outputs.new_release_published == 'true'
         with:
           image-ref: ghcr.io/bart-sysf/${{ github.event.repository.name }}:${{ steps.release.outputs.new_release_version }}
@@ -78,7 +78,7 @@ jobs:
 
       - name: Publish Trivy findings to release summary
         if: steps.release.outputs.new_release_published == 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        uses: actions/github-script@v9.0.0
         env:
           APP_NAME: ${{ github.event.repository.name }}
           IMAGE_REF: ghcr.io/bart-sysf/${{ github.event.repository.name }}:${{ steps.release.outputs.new_release_version }}
@@ -147,7 +147,7 @@ jobs:
 
       - name: Create or update Trivy findings issue
         if: steps.release.outputs.new_release_published == 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        uses: actions/github-script@v9.0.0
         env:
           APP_NAME: ${{ github.event.repository.name }}
           IMAGE_REF: ghcr.io/bart-sysf/${{ github.event.repository.name }}:${{ steps.release.outputs.new_release_version }}
